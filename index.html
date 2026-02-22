@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharm Reference — Top 200</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --border: #252830;
+    --accent: #7EBFFF;
+    --accent2: #A78BFA;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --pill-r: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(126,191,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(126,191,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 24px 100px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.4rem, 6vw, 3.8rem);
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  /* Search bar */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 32px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  #search {
+    width: 100%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px 16px 50px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 400;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #search:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(126,191,255,0.12);
+  }
+
+  #search::placeholder { color: var(--muted); }
+
+  /* Suggestions dropdown */
+  #suggestions {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .suggestion-item {
+    padding: 12px 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:hover, .suggestion-item.active { background: rgba(126,191,255,0.08); }
+
+  .sug-generic {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .sug-brand {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .sug-quiz {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+
+  /* Drug card */
+  #card {
+    display: none;
+    animation: fadeUp 0.35s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 28px 32px 24px;
+    border-bottom: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .drug-generic {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .drug-brand {
+    font-size: 14px;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+
+  .drug-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .quiz-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(167,139,250,0.15);
+    color: var(--accent2);
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 4px;
+    padding: 3px 8px;
+  }
+
+  .class-badge {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+  }
+
+  /* Sections grid */
+  .sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1.5px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    overflow: hidden;
+  }
+
+  .section {
+    padding: 24px 28px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section:nth-child(even) { border-right: none; }
+  .section:nth-last-child(-n+2) { border-bottom: none; }
+  .section.full { grid-column: 1 / -1; border-right: none; }
+  .section.full:last-child { border-bottom: none; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    opacity: 0.7;
+  }
+
+  .section-content {
+    font-size: 14px;
+    line-height: 1.75;
+    color: #c8ccd8;
+    font-weight: 300;
+  }
+
+  .section-content .line {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .section-content .line::before {
+    content: '—';
+    color: var(--muted);
+    flex-shrink: 0;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .indication-tag {
+    display: inline-block;
+    background: rgba(126,191,255,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(126,191,255,0.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 2px 3px 2px 0;
+  }
+
+  /* Empty / intro state */
+  #intro {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  #intro .big {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+  }
+
+  #intro p {
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  #intro .count {
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+    font-size: 13px;
+    margin-top: 12px;
+    opacity: 0.7;
+  }
+
+  /* Quick browse pills */
+  .quick-browse {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+    justify-content: center;
+  }
+
+  .qb-pill {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+
+  .qb-pill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(126,191,255,0.06);
+  }
+
+  @media (max-width: 600px) {
+    .sections { grid-template-columns: 1fr; }
+    .section { border-right: none !important; }
+    .section:last-child { border-bottom: none; }
+    .card-header { padding: 20px; }
+    .drug-generic { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="eyebrow">Dispensing & Patient Care II</div>
+    <h1>Top 200 <em>Drug</em><br>Reference</h1>
+    <p class="subtitle">Search by generic or brand name</p>
+  </header>
+
+  <div class="quick-browse">
+    <span class="qb-pill" onclick="filterQuiz('Quiz 1')">Q1 — Psych Pt. 1</span>
+    <span class="qb-pill" onclick="filterQuiz('Quiz 2')">Q2 — Psych Pt. 2</span>
+    <span class="qb-pill" onclick="filterQuiz('Quiz 3')">Q3 — Topicals</span>
+    <span class="qb-pill" onclick="filterQuiz('Quiz 4')">Q4 — Antibiotics</span>
+    <span class="qb-pill" onclick="filterQuiz('Quiz 5')">Q5 — Lipids</span>
+    <span class="qb-pill" onclick="filterQuiz('Quiz 6')">Q6 — Cardio</span>
+  </div>
+
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="search" placeholder="e.g. Methylphenidate or Ritalin..." autocomplete="off" spellcheck="false">
+    <div id="suggestions"></div>
+  </div>
+
+  <div id="intro">
+    <div class="big">💊</div>
+    <p>Search for any drug above to view its complete profile.<br>Works with generic <em>and</em> brand names.</p>
+    <div class="count">113 drugs across 6 quizzes</div>
+  </div>
+
+  <div id="card"></div>
+</div>
+
+<script>
+const DRUGS = [{"quiz": "Quiz 1 - Psych Part 1", "generic": "Methylphenidate", "brand": "Ritalin, Concerta, Daytrana (Patch)", "class_": "CNS Stimulant (Dopamine/Norepinephrine Reuptake Inhibitor)", "indications": "Adhd, Narcolepsy", "dosing": "Adult IR: 10-60mg BID-TID\nChildren 6+ IR: 5-60mg BID\nAdult/Children 6+ ER: 20-60mg QD", "adverse": "Weight loss, anorexia, headache, insomnia, irritability", "counseling": "Avoid evening doses (insomnia)\nDo not crush ER; CAN open & sprinkle\nTaper down\nAbuse potential / CV risk\nMed Guide Required"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Dexmethylphenidate", "brand": "Focalin, Focalin XR", "class_": "CNS Stimulant (Dopamine/Norepinephrine Reuptake Inhibitor)", "indications": "Adhd", "dosing": "Adult IR: 2.5-10mg BID (max 20mg/day)\nAdult ER: 10-40mg QD\nChildren 6+ IR: 2.5-10mg BID\nChildren 6+ ER: 5-30mg QD", "adverse": "Weight loss, anorexia, insomnia, headache, restlessness", "counseling": "Avoid evening doses (insomnia)\nDo not crush ER; CAN open & sprinkle\nTaper down\nAbuse potential / CV risk"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Lisdexamfetamine", "brand": "Vyvanse", "class_": "CNS Stimulant (Vague MOA)", "indications": "Adhd, Binge Eating Disorder", "dosing": "ADHD: 30-70mg QD\nBinge Eating: Start 30mg, titrate to 50-70mg QD", "adverse": "Insomnia, irritability, loss of appetite, upper abdominal pain, xerostomia", "counseling": "Take in morning\nWatch for palpitations and psych changes\nAbuse potential / CV risk\nMed Guide Required"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Guanfacine ER", "brand": "Intuniv", "class_": "Alpha-2 Adrenergic Agonist", "indications": "Adhd (Er Only – 2Nd Line, Typically Children)\nHtn (Ir Only – Rarely Used)", "dosing": "ER Children <17 / <45kg: 0.5-2mg QD\nER Adults >45kg: 1-7mg QD\nIR: 0.5-2mg QD", "adverse": "Drowsiness, dizziness, anorexia, insomnia, headache", "counseling": "Avoid alcohol and depressants\nCaution with driving/machinery\nTaper down\nDo NOT crush ER"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Atomoxetine", "brand": "Strattera", "class_": "CNS Stimulant (Norepinephrine Reuptake Inhibitor)", "indications": "Adhd (Not Typically First Line)", "dosing": "Children 6+ / <70kg: 0.5-1.4mg/kg/day (max 100mg/day)\nAdults/children >70kg: 40-100mg/day", "adverse": "Abdominal pain, headache, insomnia, loss of appetite, nausea, weight loss, xerostomia", "counseling": "Caution with driving/machinery\nWatch psych and CV changes\nDO NOT open capsules\nWatch suicidality in adolescents\nMonitor growth in children"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Buspirone", "brand": "BuSpar", "class_": "Antianxiety (Serotonin 5-HT1A Partial Agonist)", "indications": "Anxiety", "dosing": "15-60mg daily in 2-3 divided doses", "adverse": "Dizziness", "counseling": "Caution driving/machinery\nSeveral weeks until full effect\nTaper down\nNOT PRN – take consistently\nAvoid alcohol, grapefruit, and MAOIs"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Alprazolam", "brand": "Xanax", "class_": "Benzodiazepine", "indications": "Anxiety\nPanic Disorder (W/ Or W/Out Agoraphobia)", "dosing": "IR: 0.25-0.5mg TID; max 4mg/day\nER: 3-6mg QD", "adverse": "Ataxia, lethargy, retrograde amnesia, somnolence, weight gain, constipation, fatigue, cognitive dysfunction, decreased libido", "counseling": "Avoid alcohol and other depressants\nAvoid driving/machinery\nTaper down\nODT unstable after breaking\nAvoid in geriatrics\n18+ only"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Clonazepam", "brand": "Klonopin", "class_": "Benzodiazepine", "indications": "Anti-Seizure", "dosing": "Children <10yo/<30kg: 0.01-0.2mg/kg/day in 3 divided doses\nChildren >10yo/>30kg: 0.5-4mg/day in 2-3 divided doses\nAdults: 2-8mg/day in 1-2 divided doses; max 20mg/day", "adverse": "Ataxia, lethargy, sleepiness, weight gain", "counseling": "Avoid alcohol/opioids\nAvoid driving/machinery\nTaper down\nAvoid in geriatrics\nMed Guide Required"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Diazepam", "brand": "Valium", "class_": "Benzodiazepine", "indications": "Substance Abuse Withdrawal Syndrome\nAnxiety\nAnti-Seizure", "dosing": "Adults: 2-10mg BID-QID (max 40mg/day)\nChildren: 1-2.5mg TID-QID (max 10mg/day)", "adverse": "Drowsiness, impaired motor coordination", "counseling": "Avoid alcohol/opioids\nAvoid driving/machinery\nTaper down\nAvoid in geriatrics"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Lorazepam", "brand": "Ativan", "class_": "Benzodiazepine", "indications": "Anxiety (Adults)\nSituational Insomnia (Adults And Kids 12+)", "dosing": "Adults: 1mg BID-TID\n2-4mg QHS for insomnia", "adverse": "Drowsiness, impaired motor coordination, retrograde amnesia", "counseling": "Avoid alcohol/opioids\nAvoid driving/machinery\nTaper down\nAvoid in geriatrics\nBenzo of choice for liver failure/pregnancy"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Zolpidem", "brand": "Ambien", "class_": "Non-Barbiturate Hypnotic", "indications": "Insomnia", "dosing": "IR Female: 1.75-5mg QHS\nIR Male: 3.5-10mg QHS\nER Female: 6.25mg QHS\nER Male: 6.25-12.5mg QHS", "adverse": "Dizziness, drowsiness, headache", "counseling": "Take QHS on empty stomach\nShort-term only (7-10 days)\nAvoid alcohol and depressants\nCaution in geriatrics\nWatch for abnormal sleep behaviors"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Eszopiclone", "brand": "Lunesta", "class_": "Non-Barbiturate Hypnotic", "indications": "Insomnia", "dosing": "1-3mg QHS", "adverse": "Headache", "counseling": "Take QHS on empty stomach\nShort-term only (7-10 days)\nAvoid alcohol and depressants\nCaution in geriatrics (max 2mg)\nWatch for abnormal sleep behaviors"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Modafinil", "brand": "Provigil (CIV)", "class_": "CNS Stimulant – Wakefulness Promoting Agent", "indications": "Narcolepsy\nObstructive Sleep Apnea (Fatigue)\nShift-Work Sleep Disorder", "dosing": "200mg QD; max 400mg/day", "adverse": "Anxiety, headache, insomnia, nausea", "counseling": "Take in morning (or before needed wakefulness)\nAlertness precautions\nCan reduce hormonal contraception effectiveness\nAvoid alcohol\nMonitor HR and BP\nPractice good sleep hygiene\nMed Guide Required"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Benztropine", "brand": "Cogentin", "class_": "Antiparkinsonian / Anticholinergic", "indications": "Parkinsonism\nExtrapyramidal Disease / Medication-Induced Movement Disorder", "dosing": "Adults: 0.5-8mg once or twice daily\nChildren 3+: 0.02-0.05mg/kg once or twice daily", "adverse": "Constipation, nausea", "counseling": "Impaired heat regulation\nAvoid alcohol\nCaution driving/machinery"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Carbidopa/Levodopa", "brand": "Sinemet, Duopa", "class_": "Antiparkinsonian", "indications": "Parkinson'S Disease", "dosing": "Start 25/100mg TID, titrate up\nTypical: 400-1600mg levodopa/day\nMax: 200/2000mg/day", "adverse": "Dyskinesia", "counseling": "Avoid high-protein diet\nStick to strict dosing schedule"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Pramipexole", "brand": "Mirapex", "class_": "Dopamine Agonist / Antiparkinsonian", "indications": "Parkinson'S Disease\nRestless Leg Syndrome", "dosing": "IR: 0.125-1.5mg TID\nER: 0.375-4.5mg QD", "adverse": "Asthenia, dream disorder, dyskinesia, extrapyramidal movements, nausea, somnolence", "counseling": "Avoid alcohol and CNS depressants\nCaution with driving/machinery\nTaper down\nFood helps with nausea\nMay trigger compulsive urges/behavior"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Ropinirole", "brand": "Requip", "class_": "Dopamine Agonist", "indications": "Parkinson'S Disease\nRestless Leg Syndrome", "dosing": "Parkinson: Start 0.25mg TID, titrate to 8mg TID\nRLS: 0.25mg QHS, titrate to 4mg QHS", "adverse": "Dizziness, dyskinesia, nausea, orthostatic hypotension, somnolence, vomiting, hallucinations", "counseling": "Take with food\nTaper down\nAvoid alcohol and CNS depressants\nRisk of neuroleptic malignant syndrome"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Donepezil", "brand": "Aricept", "class_": "Central Cholinesterase Inhibitor", "indications": "Alzheimer'S Disease\nDementia", "dosing": "5-10mg QD", "adverse": "Asthenia (weakness, lack of energy)", "counseling": "Take at bedtime (with or without food)\nOnly slows progression – does NOT treat disease"}, {"quiz": "Quiz 1 - Psych Part 1", "generic": "Memantine", "brand": "Namenda", "class_": "NMDA Receptor Antagonist", "indications": "Alzheimer'S Disease", "dosing": "IR: 5mg QD, titrate to 10mg BID\nER: 7-28mg QD", "adverse": "None notable", "counseling": "Does NOT treat disease\nCan take with or without food\nDon't crush ER; CAN open and sprinkle on applesauce"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Trazodone", "brand": "Desyrel", "class_": "Antidepressant (SARI / Histamine Antagonist)", "indications": "Major Depressive Disorder", "dosing": "150-400mg daily in divided doses", "adverse": "Dizziness, sedation, headache, nausea, xerostomia", "counseling": "Caution driving/machinery\nAvoid alcohol/depressants\nTaper down\nReport priapism\nBBW for suicidality\nAvoid with MAOIs"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Bupropion", "brand": "Wellbutrin, Zyban", "class_": "Monocyclic Antidepressant (Dopamine/Norepinephrine Reuptake Inhibitor)", "indications": "Depression\nSeasonal Affective Disorder\nSmoking Cessation", "dosing": "100-450mg/day depending on formulation and indication", "adverse": "Dizziness, agitation, tachycardia, insomnia, tremor, xerostomia, nausea, constipation", "counseling": "Avoid alcohol/CNS depressants\nCaution driving/machinery\nLowers seizure threshold\nSuicidality risk\nTake at same time daily"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Lithium", "brand": "Eskalith, Lithobid", "class_": "Antimanic", "indications": "Bipolar Disorder (Maintenance And Manic Episodes)", "dosing": "300-1800mg daily in 2-4 divided doses depending on indication and formulation", "adverse": "Arrhythmias, tremor, elevated platelets/WBCs, hypothyroidism, xerostomia", "counseling": "12+ years only\nReport signs of toxicity\nCaution driving/machinery\nTolerance may decline when manic episode passes"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Aripiprazole", "brand": "Abilify", "class_": "2nd Generation Antipsychotic (Partial Dopamine/Serotonin Agonist)", "indications": "Bipolar Disorder\nSchizophrenia\nMajor Depressive Disorder\nTourette Syndrome\nAutism-Related Irritability", "dosing": "Adults: 10-30mg daily (lower for certain indications)\nChildren: 2-10mg daily", "adverse": "Akathisia, anxiety, extrapyramidal effects, headache, increased appetite, somnolence, weight gain, hyperglycemia", "counseling": "Caution driving/machinery\nAvoid CNS depressants\nIncreased seizure risk\nReduced heat tolerance\nCV risk in geriatrics\nSuicidality risk\nTaper down\nAdvise about compulsive behaviors"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Olanzapine", "brand": "Zyprexa", "class_": "Thienobenzodiazepine / Atypical Antipsychotic", "indications": "Bipolar Disorder\nSchizophrenia\nMajor Depressive Disorder", "dosing": "Adults: 5-20mg/day\nChildren: 2.5-10mg/day", "adverse": "Akathisia, asthenia, dizziness, hypercholesterolemia, hyperglycemia, increased appetite, elevated prolactin, elevated triglycerides, somnolence, tremor, weight gain, xerostomia, orthostatic hypotension, elevated LFTs", "counseling": "Caution driving/machinery\nAvoid CNS depressants\nReduced heat tolerance\nCV risk in geriatrics\nTaper down\nRise slowly"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Quetiapine", "brand": "Seroquel", "class_": "Atypical Antipsychotic (Serotonin/Dopamine Antagonist)", "indications": "Bipolar Disorder\nSchizophrenia\nMajor Depressive Disorder", "dosing": "Titrate from 50mg up to 400-800mg daily", "adverse": "Agitation, HTN, headache, weight gain, xerostomia", "counseling": "Take with food\nAlertness precautions\nRise slowly\nAvoid alcohol/opioids\nReduced heat tolerance\nDeath risk in geriatrics"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Risperidone", "brand": "Risperdal", "class_": "Benzisoxazole / Antipsychotic", "indications": "Autism-Related Irritability\nBipolar Manic Episodes\nSchizophrenia", "dosing": "Children: 0.25-0.5mg daily\nAdults: 2-3mg daily", "adverse": "Extrapyramidal symptoms, insomnia, anxiety, fatigue, metabolic changes (hyperglycemia, dyslipidemia, weight gain, DM)", "counseling": "Take with food\nAvoid alcohol/CNS depressants\nAlertness precautions\nRise slowly\nReduced heat tolerance\nDeath risk in geriatrics"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Desvenlafaxine", "brand": "Pristiq", "class_": "SNRI", "indications": "Depression", "dosing": "50-100mg daily", "adverse": "Sweating, dizziness, headache, nausea, xerostomia", "counseling": "Avoid alcohol\nTakes several weeks for full effect\nTaper down\nCaution driving/machinery\nMed Guide Required"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Venlafaxine", "brand": "Effexor", "class_": "SNRI", "indications": "Depression\nAnxiety (Generalized, Social, Panic)", "dosing": "37.5-225mg in one or divided doses depending on indication and formulation", "adverse": "Dizziness, headache, insomnia, nausea, somnolence, xerostomia, weakness", "counseling": "Take with food\nAvoid alcohol\nSeveral weeks for full effect\nTaper down\nCaution driving/machinery"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Duloxetine", "brand": "Cymbalta", "class_": "SNRI", "indications": "Anxiety\nDepression\nPain (Neuropathic, Fibromyalgia, Musculoskeletal)", "dosing": "20-60mg daily", "adverse": "Headache, nausea", "counseling": "2-4 week onset; increased suicidality during this time\nTaper down\nAvoid alcohol\nBleeding risk\nHepatotoxicity risk"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Citalopram", "brand": "Celexa", "class_": "SSRI Antidepressant", "indications": "Depression", "dosing": "20-40mg daily", "adverse": "Constipation, dizziness, headache, insomnia, nausea, sedation, xerostomia", "counseling": "Alertness precautions\nSeveral weeks for full effect – watch suicidality initially\nTaper down\nAvoid alcohol, NSAIDs, and ASA"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Escitalopram", "brand": "Lexapro", "class_": "SSRI Antidepressant", "indications": "Depression\nAnxiety", "dosing": "10-20mg daily", "adverse": "Nausea, headache, sedation", "counseling": "Alertness precautions\nSeveral weeks for full effect – watch suicidality initially\nTaper down\nAvoid alcohol, NSAIDs, and ASA"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Fluoxetine", "brand": "Prozac", "class_": "SSRI Antidepressant", "indications": "Bipolar\nDepression\nOcd\nPanic Disorder\nBulimia Nervosa\nPmdd", "dosing": "Adults: 10-80mg daily\nChildren: 10-20mg daily", "adverse": "Diarrhea, headache, somnolence, insomnia, xerostomia, nausea, tremor", "counseling": "Take QAM on empty stomach\nAlertness precautions\nSeveral weeks for full effect – watch suicidality initially\nDOES NOT require taper (long half-life)\nAvoid alcohol, NSAIDs, and ASA"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Paroxetine", "brand": "Paxil", "class_": "SSRI Antidepressant", "indications": "Depression\nAnxiety (General, Social, Ptsd)\nPms\nOcd\nMenopausal Vasomotor Symptoms", "dosing": "Adults: 20-50mg daily\nChildren: 10-20mg daily\n(Also available in ER formulation)", "adverse": "Abnormal ejaculation, asthenia, constipation, diarrhea, headache, insomnia, nausea, somnolence", "counseling": "Alertness precautions\nSeveral weeks for full effect – watch suicidality initially\nTaper down\nAvoid alcohol, NSAIDs, and ASA\nDon't crush ER"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Sertraline", "brand": "Zoloft", "class_": "SSRI Antidepressant", "indications": "Depression\nOcd\nPanic Disorder\nPmdd", "dosing": "Adults: 50-200mg daily\nChildren: 25-200mg daily", "adverse": "Diarrhea, fatigue, headache, insomnia, nausea", "counseling": "Alertness precautions\nSeveral weeks for full effect – watch suicidality initially\nTaper down\nAvoid alcohol, NSAIDs, and ASA\nNOT preferred for kids; prefer fluoxetine or escitalopram"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Mirtazapine", "brand": "Remeron", "class_": "Antidepressant / Alpha-2 Antagonist (Tetracyclic)", "indications": "Depression", "dosing": "15-45mg QHS", "adverse": "Constipation, increased appetite, somnolence, xerostomia, elevated serum cholesterol, weight gain", "counseling": "Alertness precautions\nAvoid alcohol\nTake before bed\nTake ODT immediately without water\nSuicide precautions\nTaper down"}, {"quiz": "Quiz 2 - Psych Part 2", "generic": "Amitriptyline", "brand": "Elavil", "class_": "Tricyclic Antidepressant (TCA)", "indications": "Depression", "dosing": "Adults: 75-300mg in 1-3 divided doses\nChildren: 10mg TID or 20mg QHS", "adverse": "Sedation", "counseling": "Slow onset – watch suicidality\nTaper down\nAlertness precautions\nAvoid alcohol and CNS depressants\nWatch anticholinergic effects"}, {"quiz": "Quiz 3 - Topicals", "generic": "Clindamycin Topical", "brand": "Cleocin T, Clindagel", "class_": "Lincosamide Antibiotic (blocks 50S subunit)", "indications": "Acne Vulgaris\nBacterial Vaginosis", "dosing": "Apply small amount 1-2x daily (topical)\nQHS x 3-7 days (vaginal suppository)\nForms: Solution, Foam, Gel, Swab, Lotion, Cream, Vaginal Supp (all 1%)", "adverse": "Dry skin", "counseling": "Watch for photosensitivity\nDon't use as monotherapy for acne\nApply foam with tissue\nLiquid is flammable\nWash & dry before application; avoid broken skin and mucous membranes"}, {"quiz": "Quiz 3 - Topicals", "generic": "Mupirocin Topical", "brand": "Bactroban", "class_": "Topical Antibacterial (binds tRNA synthetase)", "indications": "Impetigo\nSecondary Skin Infections\nEradicate Mrsa Nasal Colonization", "dosing": "Apply BID-TID x 3-10 days depending on indication\nForms: 2% cream, ointment, or nasal ointment", "adverse": "Headache, pruritus, burning/stinging at site, rhinitis", "counseling": "Avoid broken skin and mucous membranes (eyes)\nMay cover with gauze"}, {"quiz": "Quiz 3 - Topicals", "generic": "Clotrimazole/Betamethasone Topical", "brand": "Lotrisone", "class_": "Anti-Infective / Anti-Inflammatory Combo", "indications": "Tinea (Cruris, Corporis, Pedis)", "dosing": "Apply thin layer BID x 2 weeks (cruris/corporis) or 4 weeks (pedis)\nForms: 1%/0.05% cream or lotion", "adverse": "Dry skin (less common)", "counseling": "Shake lotion before use\nAvoid applying to large areas or under occlusive dressings"}, {"quiz": "Quiz 3 - Topicals", "generic": "Ketoconazole Topical", "brand": "Nizoral", "class_": "Imidazole Antifungal", "indications": "Dandruff\nSeborrheic Dermatitis\nTinea (Cruris, Corporis, Pedis)\nSkin Candidiasis\nPityriasis Versicolor", "dosing": "Dandruff: Q3-4 days x 8 weeks\nSeb Derm: BID x 28 days\nTinea cruris/corporis: QD x 14 days; pedis: x 6 weeks\nCandidiasis/Pityriasis: QD x 14 days\nForms: 2% cream, foam, gel, shampoo (1% shampoo OTC)", "adverse": "Application site reaction (with foam)", "counseling": "Avoid broken skin and mucous membranes\nResistance may require systemic therapy\nDon't wash for 3 hours after application\nCan apply cosmetics 20 min after application\nWill NOT treat onychomycosis\nFlammable"}, {"quiz": "Quiz 3 - Topicals", "generic": "Nystatin Topical", "brand": "Mycostatin, Nystop", "class_": "Polyene Antifungal", "indications": "Skin Candidiasis", "dosing": "Apply liberally BID-TID until healed\nForms: 100,000 units/gram cream, ointment, powder", "adverse": "Dry skin, irritation (less common)", "counseling": "Don't apply to broken skin or mucous membranes\nAvoid occlusive dressings, diapers, or tight clothes"}, {"quiz": "Quiz 3 - Topicals", "generic": "Triamcinolone Topical", "brand": "Kenalog, Aristocort", "class_": "Topical Corticosteroid", "indications": "Various Skin Conditions", "dosing": "Apply to affected area QD or BID\nForms: 0.025%, 0.5%, 1% ointment/cream", "adverse": "Dry skin, burning, stinging, pruritus, atrophy at site (less common)", "counseling": "Avoid broken skin and mucous membranes\nWash hands before applying\nAvoid prolonged use (>8 weeks)\nAvoid occlusive dressings or tight clothes\nAvoid large body areas or sensitive areas (face, groin)"}, {"quiz": "Quiz 3 - Topicals", "generic": "Lacosamide", "brand": "Vimpat (C-V)", "class_": "Miscellaneous Anticonvulsant", "indications": "Partial Onset Seizures (Initial Therapy)", "dosing": "100-200mg BID", "adverse": "Dizziness, fatigue, ataxia, nausea, tremor, diplopia", "counseling": "Can take with food if nausea is a problem\nTake at SAME TIME each day\nSeek medical attention if seizures worsen or palpitations occur\nLimit parenteral use to 5 days; convert to oral"}, {"quiz": "Quiz 3 - Topicals", "generic": "Lamotrigine", "brand": "Lamictal", "class_": "Phenyltriazine Anticonvulsant", "indications": "Bipolar Disorder\nPartial Seizures", "dosing": "Bipolar: 50mg QD titrated to 200-400mg QD\nSeizures IR: 100-500mg BID\nSeizures ER: 200-600mg QD", "adverse": "Rash, ataxia, somnolence, headache, diplopia, rhinitis, nausea, vomiting, insomnia", "counseling": "SJS risk\nTitrate slowly up / Taper down\nAvoid alcohol\nAvoid pregnancy\nWatch suicidality for first 6 months in bipolar patients\nMed Guide Required"}, {"quiz": "Quiz 3 - Topicals", "generic": "Levetiracetam", "brand": "Keppra", "class_": "Anticonvulsant", "indications": "Myoclonic Seizures\nTonic-Clonic Seizures\nPartial Seizures", "dosing": "Start 500mg BID; titrate up to max 3g/day", "adverse": "Asthenia, fatigue, headache, somnolence, vomiting, increased BP", "counseling": "Swallow ER whole\nAlertness precautions\nTitrate up / Taper down\nWatch mood changes / suicidality\nMay need dose adjustment in 3rd trimester of pregnancy"}, {"quiz": "Quiz 3 - Topicals", "generic": "Oxcarbazepine", "brand": "Trileptal", "class_": "Dibenzazepine Carboxamide / Anticonvulsant", "indications": "Partial Seizures", "dosing": "Start 300mg BID; titrate to 1200-2400mg total daily", "adverse": "Somnolence, headache, diplopia, dizziness", "counseling": "Alertness precautions\nTitrate up / Taper down\nTake with food\nAvoid grapefruit\nCan mix suspension with water\nConsider monitoring sodium levels\nChildren need higher weight-based dose\nSJS risk"}, {"quiz": "Quiz 3 - Topicals", "generic": "Phenytoin", "brand": "Dilantin", "class_": "Hydantoin Anticonvulsant", "indications": "Generalized Tonic-Clonic And Complex Partial Seizures\nSeizure Prophylaxis Post-Neurosurgery", "dosing": "Adults: 100-200mg TID\nChildren: 5mg/kg/day in 2-3 divided doses", "adverse": "Gingival hyperplasia (big gums)", "counseling": "Alertness precautions\nAvoid alcohol\nMany drug-drug interactions – use caution\nHighly protein bound; check albumin levels\nShake suspension very well before use\nDo NOT inject parenteral prep IM – 'Purple Glove Syndrome'"}, {"quiz": "Quiz 3 - Topicals", "generic": "Topiramate", "brand": "Topamax", "class_": "Anticonvulsant", "indications": "Partial Seizures\nTonic-Clonic Seizures\nMigraine Prevention", "dosing": "Adults: 25-200mg BID (titrate up)\nChildren: 1-9mg/kg/day (titrate up)", "adverse": "Ataxia, anorexia, dizziness, impaired psychomotor performance, somnolence, fatigue, nystagmus, low serum bicarbonate", "counseling": "Alertness precautions\nAvoid alcohol/CNS depressants\nTitrate up / Taper down\nImpaired heat regulation\nImpacts hormonal contraception\nHydrate well"}, {"quiz": "Quiz 3 - Topicals", "generic": "Divalproex", "brand": "Depakote", "class_": "Anticonvulsant", "indications": "Absence Seizures\nComplex Partial Seizures\nManic Bipolar Disorder\nMigraine Prophylaxis", "dosing": "15-60mg/kg/day in 1-2 doses depending on indication and formulation", "adverse": "Abdominal pain, alopecia, asthenia, diarrhea, diplopia, dizziness, headache, nausea, somnolence, tremor, vomiting", "counseling": "Alertness precautions\nAvoid alcohol\nWatch for hepatotoxicity\nTaper down\nTake with food\nTeratogenic"}, {"quiz": "Quiz 3 - Topicals", "generic": "Gabapentin", "brand": "Neurontin", "class_": "GABA Analog / Anticonvulsant", "indications": "Adjunct Therapy For Partial Seizures\nPostherpetic Neuralgia", "dosing": "Adults: 300-600mg TID (up to 1200mg TID)\nChildren: 10-35mg/kg/day in 3 divided doses", "adverse": "Dizziness, somnolence", "counseling": "Alertness precautions\nAvoid alcohol\nTitrate up / Taper down\nSeparate from antacids by 2 hours\nFirst dose taken at bedtime\nSuicidality risk"}, {"quiz": "Quiz 3 - Topicals", "generic": "Pregabalin", "brand": "Lyrica", "class_": "Analgesic / Anticonvulsant", "indications": "Neuropathic Pain\nFibromyalgia\nPartial Seizures\nPostherpetic Neuralgia", "dosing": "50-150mg BID-TID depending on indication", "adverse": "Dizziness, somnolence, ataxia, headache, peripheral edema", "counseling": "Alertness precautions\nAvoid alcohol/CNS depressants\nTaper down\nUse solution within 45 days of opening\nPossible suicidality risk"}, {"quiz": "Quiz 3 - Topicals", "generic": "Carbamazepine", "brand": "Tegretol", "class_": "Anticonvulsant", "indications": "Focal / Generalized Seizures\nNeuropathic Pain", "dosing": "Adults: 200-600mg BID (titrate up)\nChildren: Various weight-based dosing", "adverse": "Hyponatremia, dizziness, nausea", "counseling": "Alertness precautions\nOCT precautions (impacts contraception)\nTake with food\nAvoid alcohol\nAvoid grapefruit\nTaper down\nSJS risk – genetic testing recommended for patients from SE Asia"}, {"quiz": "Quiz 3 - Topicals", "generic": "Phenobarbital", "brand": "Luminal", "class_": "Long-Acting Barbiturate (C-IV)", "indications": "Seizures\nSedation (Not Preferred)", "dosing": "Adults: 50-100mg BID-TID (higher for sedation)\nChildren: 3-6mg/kg/day", "adverse": "Apnea, ataxia, confusion, dizziness, hypotension, hypoventilation, rash, somnolence, syncope (less common)", "counseling": "Alertness precautions\nAvoid alcohol/CNS depressants\nCaution in peds and geriatrics\nTaper down\nMany drug-drug interactions"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Cephalexin", "brand": "Keflex", "class_": "1st Generation Cephalosporin", "indications": "Skin Infection / Cellulitis\nOsteomyelitis\nOtitis Media\nRespiratory Tract Infection\nStrep\nImpetigo", "dosing": "Adults: 250-500mg Q6-12H x 5-10 days\nChildren: 25-100mg/kg/day in 2-4 divided doses (max 4g/day)", "adverse": "Nausea", "counseling": "Complete full course of therapy\nSymptoms should improve in 2-3 days\nStore suspension in fridge; shake well\nCan take food after suspension, NOT with\nWatch for rash / cross-reactivity with penicillin"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Cefdinir", "brand": "Omnicef", "class_": "3rd Generation Cephalosporin", "indications": "Ent Infections\nRespiratory Infections\nCommunity Acquired Pneumonia\nStrep\nCopd Exacerbation", "dosing": "Adults: 300mg BID x 5-10 days\nChildren: 7mg/kg BID", "adverse": "Diarrhea", "counseling": "Complete full course of therapy\nSymptoms improve in 2-3 days\nStore suspension at room temp up to 10 days\nCan take food after suspension, NOT with\nSeparate from antacids and vitamins by 2 hours\nWatch cross-sensitivity with penicillin"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Hydroxychloroquine", "brand": "Plaquenil", "class_": "Aminoquinoline", "indications": "Lupus\nMalaria (Prophylaxis And Treatment)\nRheumatoid Arthritis (Maintenance)", "dosing": "Adults: 200-600mg/day\nChildren: 5-13mg/kg/day\nMalaria prevention: once weekly\nMalaria treatment: multiple doses over 2 hours", "adverse": "Abdominal pain, constipation, diarrhea, headache, nausea, dizziness, visual disturbances, hyperpigmentation (less common)", "counseling": "Take with food\nTake at same time each day\nDelayed onset for RA"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Acyclovir", "brand": "Zovirax", "class_": "Viral DNA Polymerase Inhibitor", "indications": "Genital Herpes (Treatment & Suppression)\nShingles\nChickenpox\nCold Sores", "dosing": "Adults: 400-800mg 3-5x daily\nChildren: 400-1200mg/day in 3-5 doses\nTypical course: 7-10 days", "adverse": "Malaise", "counseling": "Complete full course of treatment\nSeek help if symptoms don't improve in 2-3 days\nDrink lots of fluids\nWatch for nephrotoxicity"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Valacyclovir", "brand": "Valtrex", "class_": "Viral DNA Polymerase Inhibitor", "indications": "Genital Herpes (Treatment & Suppression)\nShingles\nChickenpox\nCold Sores", "dosing": "Adults: 500-1000mg 2-3x daily\nChildren: 20mg/kg TID\nTypical course: 7-10 days", "adverse": "Malaise, headache, nausea, neutropenia, nasopharyngitis, elevated LFTs", "counseling": "Drink lots of fluids\nComplete course of therapy; symptoms improve in 2-3 days\nDrug of choice for herpes zoster\nWatch for nephrotoxicity\nWatch for severe hypersensitivity reaction"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Oseltamivir", "brand": "Tamiflu", "class_": "Neuraminidase Inhibitor (Flu Antiviral)", "indications": "Influenza (Treatment & Prophylaxis)", "dosing": "30-70mg BID x 5 days", "adverse": "Nausea, vomiting, headache", "counseling": "Take with food\nComplete full course of therapy\nSymptoms should improve in 2-3 days\nUse dosing device for oral suspension\nInitiate therapy ASAP\nTreatment may need to be extended"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Fluconazole", "brand": "Diflucan", "class_": "Triazole Antifungal", "indications": "Vaginal Candidiasis (Complicated/Uncomplicated)\nSystemic Candidiasis\nOral/Esophageal Candidiasis\nCryptococcal Meningitis", "dosing": "Vaginal: 150mg Q72H\nSerious infections: 100-800mg daily\nChildren: 3-12mg/kg/day", "adverse": "Headache", "counseling": "Caution in pregnancy\nMany potential DDIs\nTake at same time each week"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Amoxicillin", "brand": "Amoxil", "class_": "3rd Generation Penicillin", "indications": "Ent Infections\nStrep\nLower Respiratory Infection\nH. Pylori Eradication", "dosing": "Adults: 500mg, 875mg, or 1000mg 1-3x daily\nChildren: 25-90mg/kg/day in 2-3 divided doses", "adverse": "Diarrhea, nausea", "counseling": "Complete full course of therapy\nCan take with food, but avoid food with suspension\nReduces effectiveness of OCTs\nWatch for allergies"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Amoxicillin/Clavulanate", "brand": "Augmentin", "class_": "Beta-Lactam / Beta-Lactamase Inhibitor Combo", "indications": "Ent (Otitis Media, Sinusitis)\nLower Respiratory Infection\nUti\nCommunity Acquired Pneumonia", "dosing": "Adults: 500-875mg amoxicillin BID (all doses include 125mg clavulanate)\nChildren: 25-90mg/kg/day in 2-3 divided doses", "adverse": "Nausea, diarrhea", "counseling": "Complete full course of therapy\nTake with food\nReduces effectiveness of OCTs\nWatch for allergies"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Penicillin", "brand": "Veetids, Pen VK", "class_": "Prototypical Beta-Lactam", "indications": "Otitis Media\nStrep\nErysipelas (Group A Strep Skin Infection)\nGingivitis", "dosing": "Adults: 250-500mg 3-4x daily\nChildren: 25-50mg/kg/day in 3-4 divided doses (max 3g)", "adverse": "Diarrhea, nausea, vomiting, oral candidiasis", "counseling": "Complete full course of therapy\nTake on EMPTY stomach\nSeek medical care for severe adverse reaction\nUse caution in renal/seizure patients"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Ciprofloxacin Oral", "brand": "Cipro", "class_": "Fluoroquinolone Antibiotic", "indications": "Anthrax\nBacterial Prostatitis\nUti\nBronchitis, Lower Respiratory Tract, Bone/Skin/Soft Tissue, Abdominal, Sinusitis", "dosing": "Adults: 250-750mg BID\nChildren: Anthrax only – 15mg/kg/day", "adverse": "Tooth discoloration in infants, musculoskeletal symptoms", "counseling": "Take with food\nAvoid dairy\nSeparate from antacids/vitamins\nTypically avoid in children and geriatrics\nSeek care for severe adverse reaction\nDon't use for routine infections\nMed Guide Required"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Levofloxacin", "brand": "Levaquin", "class_": "Fluoroquinolone Antibiotic", "indications": "Bacterial Prostatitis\nBacterial Sinusitis\nBronchitis\nCommunity Acquired Pneumonia\nPyelonephritis\nSkin Infections", "dosing": "Adults: 250-750mg QD x 5-14 days\nChildren: N/A", "adverse": "Photosensitivity", "counseling": "SJS risk\nSeparate from dairy/vitamins by 2 hours\nTake with food\nNot approved for children\nTendon rupture risk for age 60+\nDon't use for routine infections\nMed Guide Required"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Moxifloxacin Oral", "brand": "Avelox", "class_": "Fluoroquinolone Antibiotic", "indications": "Respiratory Infections (Sinusitis, Chronic Bronchitis, Cap)\nComplex Intraabdominal Infections\nSkin Infections", "dosing": "400mg QD x 5-14 days", "adverse": "Nausea, dizziness, diarrhea, headache (less common)", "counseling": "SJS risk\nPhotosensitivity risk\nAvoid dairy and vitamins\nNot approved for children\nTendon rupture risk for age 60+\nNot for routine infections"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Metronidazole", "brand": "Flagyl", "class_": "Nitroimidazole Antibiotic / Antiprotozoal", "indications": "Anaerobic Abscess\nAmebic Dysentery\nTrichomoniasis\nBacterial Vaginosis", "dosing": "Adults: 500-750mg BID-TID x 7-10 days (higher dose QID for abscess)\nChildren: 35-50mg/kg/day in 3 divided doses", "adverse": "Headache, nausea", "counseling": "AVOID ALCOHOL\nComplete full course of therapy\nTake with food for upset stomach"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Clindamycin Oral", "brand": "Cleocin", "class_": "Lincosamide Antibiotic", "indications": "Susceptible Anaerobic/Staphyloccal/Streptococcal Infections\nSkin & Subcutaneous Tissue Infections\nAbdominal Infections\nLower Respiratory Tract Infection\nPelvic Inflammatory Disease\nSepticemia\nOsteomyelitis", "dosing": "Adults: 150-450mg Q6H\nChildren: 8-20mg/kg/day in 3-4 divided doses", "adverse": "Nausea", "counseling": "Complete full course of therapy\nTake with full glass of water\nRemain upright 30 min after taking\nC. diff and other infection risk with long-term use\nGood for anaerobes"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Azithromycin", "brand": "Zithromax", "class_": "Macrolide Antibiotic", "indications": "Respiratory Infections (Copd Exacerbation, Sinusitis, Cap)\nGroup A Strep\nStis", "dosing": "Adults: Z-PAK (500mg x1, then 250mg x4 days); OR 500mg QD x 3 days\nChildren: 5-10mg/kg x 3-5 days", "adverse": "Diarrhea, nausea, vomiting", "counseling": "Complete full course of therapy\nWatch for liver/cardiac toxicity\nDon't mix food with suspension"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Clarithromycin", "brand": "Biaxin", "class_": "Macrolide Antibiotic", "indications": "Respiratory Infections (Copd Exacerbations, Cap)\nStrep\nH. Pylori\nM. Avium Complex", "dosing": "Adults: 250-500mg BID or 1000mg QD (ER)\nChildren: 15mg/kg/day in 2 divided doses", "adverse": "Altered taste", "counseling": "Complete full course of therapy\nWatch for liver and cardiac toxicity\nMultiple DDIs"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Nitrofurantoin", "brand": "Macrobid, Macrodantin", "class_": "Nitrofuran Antibiotic", "indications": "Uti (Treatment And Prophylaxis)", "dosing": "Macrobid: 100mg BID x 5-7 days\nMacrodantin: 50-100mg QID x 7 days\nProphylaxis: 50-100mg QHS\nChildren: 5-7mg/kg/day", "adverse": "Dark/rust-colored urine", "counseling": "Complete full course of therapy\nDoes NOT reach tissue – cannot treat pyelonephritis\nStore at room temp\nOften used for prevention"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Trimethoprim/Sulfamethoxazole", "brand": "Bactrim, Septra", "class_": "Sulfonamide Antibiotic", "indications": "Copd Exacerbation\nHiv-Related Pneumonia (Pcp)\nUti\nTraveler'S Diarrhea", "dosing": "Adults: 800/160mg to 1600/320mg BID x 3-21 days\nChildren: 8mg/kg of TMP 1-2x daily", "adverse": "Diarrhea, nausea", "counseling": "Complete full course of therapy\nAvoid in G6PD deficiency\nPhotosensitivity\nStore at room temp\nMaintain adequate hydration\nPreferred for Pneumocystis pneumonia (PCP)"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Doxycycline", "brand": "Vibramycin, Doxy", "class_": "Tetracycline Antibiotic", "indications": "Acne Vulgaris\nAcinetobacter\nGonorrhea\nStaph Skin Infection\nCommunity Acquired Pneumonia", "dosing": "Adults: 100mg 1-2x daily\nChildren: 2.2-4.4mg/kg/day in 2 divided doses", "adverse": "Esophageal injury, photosensitivity, skin hyperpigmentation, tooth discoloration in children <8 yo", "counseling": "Take with food and a full cup of water\nComplete full course of therapy\nStop if rash develops\nWear sunscreen\nAvoid calcium\nAvoid in children <8 years old"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Minocycline", "brand": "Minocin", "class_": "Tetracycline Antibiotic", "indications": "Acne Vulgaris\nPenicillin Alternative", "dosing": "200mg loading dose, then 100mg BID", "adverse": "Dizziness, vertigo, tooth discoloration in children <8 yo, headache", "counseling": "Use sunscreen\nComplete full course of therapy\nTake with food; avoid calcium\nAvoid in pregnancy\nAvoid in children <8 years old"}, {"quiz": "Quiz 4 - Antibiotics", "generic": "Nystatin Oral", "brand": "Bio-Statin", "class_": "Polyene Antifungal", "indications": "Gi / Pharyngeal Candidiasis", "dosing": "Tablet: 500,000–1,000,000 units PO TID\nSuspension: 400,000–600,000 units QID", "adverse": "GI distress, nausea, vomiting, constipation, oral irritation (less common)", "counseling": "No significant counseling points"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Colesevelam", "brand": "Welchol", "class_": "Hypolipidemic / Bile Acid Sequestrant", "indications": "Primary Hyperlipidemia\nFamilial Hyperlipidemia\nType Ii Diabetes Mellitus", "dosing": "3.75g daily in 1-2 divided doses", "adverse": "Constipation", "counseling": "Take with 4-8 oz of fluid\nTake with food\nCan take with a statin\nModify diet and exercise\nSeparate from fibrates"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Fenofibrate", "brand": "Tricor, Antara", "class_": "Antihyperlipidemic / Fibrate", "indications": "Hypertriglyceridemia\nFredrickson Hyperlipidemia", "dosing": "54-160mg daily", "adverse": "Hyperhomocysteinemia (elevated cysteine in blood)", "counseling": "Separate from bile acid sequestrants\nWatch for nephro- and hepatotoxicity, especially with statins\nWatch for rhabdomyolysis\nSome brands must be taken with food\nProducts are NOT interchangeable"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Atorvastatin", "brand": "Lipitor", "class_": "HMG-CoA Reductase Inhibitor (Statin)", "indications": "Primary/Secondary Prevention Of Atherosclerotic Cv Disease\nFamilial Hypercholesterolemia", "dosing": "10-80mg QD", "adverse": "Myopathy, diarrhea, headache, nasopharyngitis", "counseling": "Avoid grapefruit\nAvoid alcohol\nLifestyle modifications\nWatch for myopathy\nMonitor glucose levels\nCaution in pregnancy\nContraindicated in breastfeeding\nReassess and titrate every 6-12 weeks"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Lovastatin", "brand": "Mevacor, Altoprev", "class_": "HMG-CoA Reductase Inhibitor (Statin)", "indications": "Coronary Arteriosclerosis\nPrimary And Mixed Hypercholesterolemia\nFamilial Hypercholesterolemia", "dosing": "10-80mg QHS", "adverse": "Abdominal pain, constipation, diarrhea, headache, elevated liver enzymes, myalgia, nausea, rash, hyperglycemia (less common)", "counseling": "Take IR with evening meal / ER QHS\nAvoid alcohol\nAvoid grapefruit\nWatch hepato-, renal-, and muscle toxicity\nLifestyle modifications\nWatch DDIs\nMonitor and titrate\nCaution in pregnancy\nContraindicated in breastfeeding"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Pravastatin", "brand": "Pravachol", "class_": "HMG-CoA Reductase Inhibitor (Statin)", "indications": "Cva Prevention\nCoronary Atherosclerosis (Primary/Secondary Prevention)\nFamilial Hypercholesterolemia", "dosing": "Adults: 40-80mg QHS", "adverse": "Headache, heartburn, elevated liver enzymes, flu-like symptoms, musculoskeletal pain, myalgia, nausea, rash, vomiting (less common)", "counseling": "Take in evening\nAvoid alcohol\nLifestyle modifications\nMonitor blood sugar\nMonitor and titrate\nCaution in pregnancy\nContraindicated in breastfeeding"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Rosuvastatin", "brand": "Crestor", "class_": "HMG-CoA Reductase Inhibitor (Statin)", "indications": "Hyperlipidemia\nCv Event Prevention\nFamilial Hypercholesterolemia", "dosing": "10-40mg QD", "adverse": "Arthralgia", "counseling": "Avoid alcohol\nLifestyle modifications\nCaution in pregnancy\nContraindicated in breastfeeding\nMonitor and titrate"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Simvastatin", "brand": "Zocor", "class_": "HMG-CoA Reductase Inhibitor (Statin)", "indications": "Hyperlipidemia\nPrimary/Secondary Prevention Of Atherosclerotic Disease\nFamilial Hypercholesterolemia", "dosing": "5-40mg QHS", "adverse": "Abdominal pain, constipation, diarrhea, headache, elevated liver enzymes, myalgia, nausea, rash (less common)", "counseling": "Avoid alcohol\nAvoid grapefruit\nWatch DDIs\nLifestyle modifications\nMonitor glucose levels\nMonitor and titrate\nCaution in pregnancy\nContraindicated in breastfeeding"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Niacin", "brand": "Niaspan", "class_": "Antihyperlipidemic / B Vitamin", "indications": "Dyslipidemia (Mainly Hypertriglyceridemia)", "dosing": "IR: 100-1000mg TID\nER: 500-2000mg QHS", "adverse": "Flushing, headache", "counseling": "Titrate up slowly\nTo reduce flushing: avoid alcohol & hot beverages, take at night with light snack, pre-treat with NSAIDs, prefer ER formulation"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Omega-3-Acid Ethyl Esters", "brand": "Lovaza", "class_": "Antihyperlipidemic", "indications": "Hypertriglyceridemia", "dosing": "4g daily in 1-2 divided doses", "adverse": "Diarrhea", "counseling": "Take with food\nCan freeze capsules to reduce fishy taste\nSeek medical attention for severe adverse reaction"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Ezetimibe", "brand": "Zetia", "class_": "Cholesterol Absorption Inhibitor / Antihyperlipidemic", "indications": "Primary, Mixed, And Familial Hypercholesterolemia", "dosing": "10mg daily", "adverse": "Abdominal pain, constipation, diarrhea, headache, elevated liver enzymes, myopathy, nausea (less common)", "counseling": "Can take concurrently with a statin\nSeparate from bile acid sequestrants"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Azathioprine", "brand": "Azamun, Imuran", "class_": "Immunosuppressant", "indications": "Renal Transplant (Rarely Used)\nRheumatoid Arthritis", "dosing": "1-5mg/kg/day in 1-2 divided doses depending on indication", "adverse": "Nausea, leukopenia, increased infection risk", "counseling": "Take with food\nMay increase risk of cancer and infection\nMonitor WBCs"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Anastrozole", "brand": "Arimidex", "class_": "Aromatase Inhibitor / Antineoplastic", "indications": "Hr-Positive Breast Cancer (Post-Menopausal Or Post-Tamoxifen Therapy)", "dosing": "1mg daily (for years)", "adverse": "Edema, HTN, vasodilation, nausea, vomiting, arthralgia, arthritis, osteoporosis, hot flashes, depression, GI disturbance", "counseling": "Can decrease bone density and increase fracture risk\nSeek care for signs of toxicity\nNot for pre-menopausal women\nAs effective as tamoxifen with fewer adverse effects"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Methotrexate", "brand": "Trexall", "class_": "Antimetabolite / DMARD", "indications": "Non-Hodgkin'S Lymphoma\nPsoriasis\nRheumatoid Arthritis (Adult And Juvenile)", "dosing": "Cancer: 10-25mg/day in 4-8 day on/off cycles\nOthers: 7.5-25mg per week in 1-3 divided doses", "adverse": "Myelosuppression, nausea, vomiting, alopecia, stomatitis, photosensitivity, rash", "counseling": "Avoid pregnancy (male AND female)\nEmphasize correct dosing schedule (weekly, not daily)\nPrescribe with antiemetics\nAvoid sun exposure\nExtensive monitoring required\nUrine alkalinization at high doses\nSupplement with folate (low dose) or leucovorin (high dose)"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Tamoxifen", "brand": "Soltamox", "class_": "Estrogen Receptor Antagonist / Antineoplastic", "indications": "Breast Cancer (Prevention And Treatment, Pre- And Post-Menopausal)", "dosing": "20mg daily", "adverse": "Flushing, HTN, edema, hot flashes, vaginal discharge", "counseling": "Watch for signs of VTE\nVenlafaxine (SNRI) can help reduce hot flashes\nAvoid estrogen-containing supplements (e.g., black cohosh)\nAnastrozole preferred for post-menopausal women"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Etanercept", "brand": "Enbrel", "class_": "DMARD / TNF Blocker (Biologic)", "indications": "Ankylosing Spondylitis\nPsoriasis\nJuvenile, Rheumatoid, And Psoriatic Arthritis", "dosing": "25-50mg SubQ 1-2x weekly", "adverse": "Headache, skin rash, infections, antibody development, injection site reactions", "counseling": "Store in refrigerator – DO NOT freeze\nProtect from light\nWatch for infections\nGood injection technique (sterilize, rotate site, don't shake, use sharps container)\nWatch for latex allergy\nOften used with methotrexate"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Cyanocobalamin", "brand": "Cobolin-M", "class_": "Essential B Vitamin (B12)", "indications": "Cobalamin (B12) Deficiency (Normal And Abnormal Absorption)", "dosing": "Normal absorption: 1000mcg PO daily\nAbnormal absorption: 100mcg SubQ monthly (for life)", "adverse": "Injection site pain, arthralgia, fatigue, dizziness, headache", "counseling": "Take ER products with food\nAvoid alcohol\nSeveral weeks until full effect\nMetformin lowers B12 levels\nMay be used as supplement during methotrexate treatment"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Folic Acid", "brand": "FA-8", "class_": "Essential B Vitamin (B9)", "indications": "Megaloblastic And Macrocytic Anemia Due To B9 Deficiency", "dosing": "Adults: 400-1000mcg daily", "adverse": "Loss of appetite", "counseling": "Avoid alcohol\nSeveral weeks for full effect\nPrevents neural tube defects in pregnancy\nOften found in enriched foods\nCounters pemetrexed toxicity"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Potassium Chloride", "brand": "Klor-Con", "class_": "Electrolyte / Potassium Supplement", "indications": "Hypokalemia (Treatment And Prophylaxis)", "dosing": "20-80 mEq in 1-5 divided doses AFTER meals", "adverse": "Nausea, indigestion, flatulence", "counseling": "Take with food\nMix powder with 4 oz of water or juice\nOnly select products can be crushed/broken\nInsulin and beta-agonists can lower potassium levels\nAlso check Mg and Ca levels"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Allopurinol", "brand": "Zyloprim", "class_": "Xanthine Oxidase Inhibitor / Antigout", "indications": "Gout (Mild To Severe)\nHyperuricemia / Tumor Lysis Syndrome\nNephrolithiasis Prophylaxis", "dosing": "100-800mg daily (titrate up)", "adverse": "Rash, maculopapular eruption, acute gout flares at initiation (less common)", "counseling": "Take AFTER meals\nMaintain adequate hydration\nAvoid alcohol\nAvoid caffeine\nRisk of myelosuppression, agranulocytosis, SJS\nTitrate up slowly\nFull effect may take 2-6 weeks\nAdherence is key"}, {"quiz": "Quiz 5 - Lipids & Oncology", "generic": "Colchicine", "brand": "Colcrys", "class_": "Antigout", "indications": "Gout (Treatment And Prophylaxis)\nFamilial Mediterranean Fever", "dosing": "0.6-1.8mg daily", "adverse": "Nausea, diarrhea", "counseling": "Use appropriate dosing schedule\nMed Guide Required"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Terazosin", "brand": "Hytrin", "class_": "Alpha-1 Blocker", "indications": "Bph\nHtn", "dosing": "1mg PO daily; titrate up to 20-40mg", "adverse": "Asthenia, dizziness", "counseling": "Alertness precautions\nRise slowly\n1st dose effect – take at bedtime\nTaper down\nAvoid alcohol"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Irbesartan", "brand": "Avapro", "class_": "Angiotensin II Receptor Blocker (ARB)", "indications": "Diabetic Nephropathy (T2Dm + Htn)\nHtn", "dosing": "150-300mg daily", "adverse": "Hyperkalemia", "counseling": "Seek care for angioedema, fluid loss, or hyperkalemia\nAvoid in pregnancy\nTaper down\nWatch K+ supplements\nMay cause dizziness\nAvoid alcohol\nObserve fluid-depleted patients\nHigher dose for CHF\nAlertness precautions"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Losartan", "brand": "Cozaar", "class_": "Angiotensin II Receptor Blocker (ARB)", "indications": "Htn\nReduce Stroke Risk\nDiabetic Nephropathy", "dosing": "50-100mg daily", "adverse": "Headache", "counseling": "Seek care for angioedema, fluid loss, or hyperkalemia\nAvoid in pregnancy\nTaper down\nWatch K+ supplements\nMay cause dizziness\nAlertness precautions\nObserve fluid-depleted patients\nHigher dose for CHF"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Valsartan", "brand": "Diovan", "class_": "Angiotensin II Receptor Blocker (ARB)", "indications": "Heart Failure\nHtn\nAcute Coronary Syndrome", "dosing": "20-40mg BID OR 80-160mg daily; max 320mg/day", "adverse": "Dizziness, increased BUN", "counseling": "Seek care for angioedema, fluid loss, or hyperkalemia\nAvoid in pregnancy\nTaper down\nWatch K+ supplements\nAvoid alcohol\nAvoid NSAIDs"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Sacubitril/Valsartan", "brand": "Entresto", "class_": "ARNI / ARB Combo", "indications": "Hfref", "dosing": "49/51mg BID; titrate to 97/103mg BID", "adverse": "Hypotension, hyperkalemia, increased SCr", "counseling": "Taper down\nWatch K+ supplements\nMay cause dizziness\nAlertness precautions\nAvoid NSAIDs\n36-hour washout required from ACEi before starting"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Benazepril", "brand": "Lotensin", "class_": "ACE Inhibitor (ACEi)", "indications": "Htn", "dosing": "10-40mg daily", "adverse": "Diarrhea, orthostatic dizziness, dry cough, fatigue, headache, hyperkalemia, nausea, nephrotoxicity, rash, tachycardia, vomiting (less common)", "counseling": "Avoid in pregnancy\nAngioedema risk\nDry cough most common side effect\nWatch K+ supplements\nMay cause dizziness\nTake at same time daily\nWatch fluid-depleted patients"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Enalapril", "brand": "Vasotec", "class_": "ACE Inhibitor (ACEi)", "indications": "Heart Failure\nHtn\nNon-Diabetic Kidney Disease", "dosing": "2.5-5mg; titrate to 40mg/day", "adverse": "Increased SCr", "counseling": "Avoid in pregnancy\nWatch K+ supplements\nMay cause dizziness\nRise slowly\nWatch for angioedema\nMonitor SCr"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Lisinopril", "brand": "Prinivil, Zestril", "class_": "ACE Inhibitor (ACEi)", "indications": "Htn\nStemi\nHfref", "dosing": "Start 2.5-10mg; titrate to 40mg/day", "adverse": "Diarrhea, dizziness, dry cough, headache, hypotension, hyperkalemia, nausea, nephrotoxicity, rash, tachycardia, vomiting (less common)", "counseling": "Avoid in pregnancy\nWatch K+ supplements\nMay cause dizziness\nWatch fluid-depleted patients"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Ramipril", "brand": "Altace", "class_": "ACE Inhibitor (ACEi)", "indications": "Heart Failure\nHtn\nReduce Cv Event Risk", "dosing": "2.5mg 1-2x daily; titrate to 10-20mg/day", "adverse": "Diarrhea, dizziness, dry cough, headache, hypotension, hyperkalemia, nausea, nephrotoxicity, rash, tachycardia, vomiting (less common)", "counseling": "Avoid in pregnancy\nWatch K+ supplements\nMay cause dizziness\nDry cough common\n2-4 weeks for full effect\nCheck SCr and serum K+\nCan sprinkle on applesauce – do NOT chew"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Atenolol", "brand": "Tenormin", "class_": "Beta Blocker (Cardioselective)", "indications": "Angina\nHtn\nAmi", "dosing": "25-50mg 1-2x daily; titrate to 100-200mg/day", "adverse": "Bradyarrhythmias, cold extremities, dizziness, fatigue, hypotension, depression", "counseling": "Take on empty stomach\nTaper down\nReport bradycardia/toxicity\nMonitor blood sugar in DM\nMay reduce sex drive\nMay take 1-2 weeks for full effect\nOnly renally-eliminated beta blocker"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Carvedilol", "brand": "Coreg", "class_": "Alpha-1 / Beta Blocker", "indications": "Hfref\nHtn", "dosing": "3.125-6.25mg BID; titrate to 25-50mg BID", "adverse": "Cold extremities, dizziness, erectile dysfunction, fatigue, hypotension, weight gain", "counseling": "Take with food or milk\nReport toxicity\nTaper down\nAlertness precautions\nMonitor blood glucose in DM\nUse only with comorbidities for HTN"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Metoprolol", "brand": "Lopressor, Toprol XL", "class_": "Beta Blocker (Cardioselective)", "indications": "Angina\nHfref\nHtn\nAmi", "dosing": "IR: 50mg BID or ER: 100mg QD; titrate to 200-400mg", "adverse": "Dizziness, fatigue, hypotension", "counseling": "Take on empty stomach\nAvoid alcohol\nTaper down\nReport toxicity\nMonitor glucose in DM\nDon't combine with non-dihydropyridine CCBs"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Propranolol", "brand": "Inderal", "class_": "Beta Blocker (Non-Selective)", "indications": "Angina\nArrhythmias\nHtn\nMigraine Prevention", "dosing": "80-320mg/day in 2-4 divided doses", "adverse": "Hypotension", "counseling": "Take IR on empty stomach\nAvoid alcohol\nTaper down\nReport toxicity\nMay cause dizziness\nMonitor glucose in DM\nWatch for asthma/bronchospasm"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Amlodipine", "brand": "Norvasc", "class_": "Selective CCB (Dihydropyridine)", "indications": "Htn\nStable Angina\nVasospastic Angina", "dosing": "5-10mg daily", "adverse": "Peripheral edema, pulmonary edema", "counseling": "Avoid alcohol\nReport edema\nMay cause dizziness\nAlertness precautions"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Diltiazem", "brand": "Cardizem", "class_": "Non-Selective CCB (Non-Dihydropyridine)", "indications": "Htn\nStable Angina\nCardiac Arrhythmias", "dosing": "IR: 60-120mg BID (up to 360mg/day)\nER: 120-240mg QD (up to 540mg/day)", "adverse": "Edema, headache", "counseling": "Brand matters – follow specific product instructions\nAvoid alcohol\nSome formulations can be opened\nTake at same time daily\nAvoid combining with beta blockers"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Verapamil", "brand": "Calan SR", "class_": "Non-Selective CCB (Non-Dihydropyridine)", "indications": "Angina\nCardiac Arrhythmias\nHtn", "dosing": "240-480mg/day in 3-4 divided doses", "adverse": "Gingival hyperplasia", "counseling": "18+ only\nDo NOT crush ER; CAN open and sprinkle\nReport toxicity\nTaper down\nRise slowly\nAvoid alcohol\nAvoid grapefruit juice"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Nifedipine", "brand": "Procardia, Adalat", "class_": "Selective CCB (Dihydropyridine)", "indications": "Htn\nStable Angina\nVariant (Vasospastic) Angina", "dosing": "30-180mg/day in 1-2 divided doses", "adverse": "Flushing, headache, dizziness, weakness, nausea, dyspepsia", "counseling": "Take IR on empty stomach\nReport toxicity\nTitrate up\nTaper down\nAlertness precautions\nAvoid grapefruit"}, {"quiz": "Quiz 6 - HTN & Cardio", "generic": "Clonidine", "brand": "Catapres", "class_": "Alpha-2 Agonist", "indications": "Adhd (Especially Children)\nHtn", "dosing": "0.1-0.6mg/day in 1-2 divided doses", "adverse": "Nervousness, headache, somnolence, erythema (patch), xerostomia", "counseling": "Avoid alcohol and CNS depressants\nAlertness precautions\nSwallow ER whole\nReport toxicity\nTaper down"}];
+
+const searchEl = document.getElementById('search');
+const suggestionsEl = document.getElementById('suggestions');
+const cardEl = document.getElementById('card');
+const introEl = document.getElementById('intro');
+
+let activeIdx = -1;
+let currentMatches = [];
+
+function normalize(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function match(drug, query) {
+  const q = normalize(query);
+  if (!q) return false;
+  const g = normalize(drug.generic);
+  const b = normalize(drug.brand);
+  return g.includes(q) || b.includes(q);
+}
+
+function highlightMatch(text, query) {
+  if (!query) return text;
+  const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(re, '<mark style="background:rgba(126,191,255,0.25);color:#7EBFFF;border-radius:2px;">$1</mark>');
+}
+
+function showSuggestions(query) {
+  if (!query.trim()) {
+    suggestionsEl.style.display = 'none';
+    return;
+  }
+  currentMatches = DRUGS.filter(d => match(d, query)).slice(0, 8);
+  if (!currentMatches.length) {
+    suggestionsEl.style.display = 'none';
+    return;
+  }
+  suggestionsEl.innerHTML = currentMatches.map((d, i) => `
+    <div class="suggestion-item" data-idx="${i}" onclick="selectDrug(${i})">
+      <div>
+        <div class="sug-generic">${highlightMatch(d.generic, query)}</div>
+        <div class="sug-brand">${d.brand.split(',')[0]}</div>
+      </div>
+      <div class="sug-quiz">${d.quiz.split(' - ')[0]}</div>
+    </div>
+  `).join('');
+  suggestionsEl.style.display = 'block';
+  activeIdx = -1;
+}
+
+function selectDrug(idx) {
+  const drug = currentMatches[idx];
+  suggestionsEl.style.display = 'none';
+  searchEl.value = drug.generic;
+  renderCard(drug);
+}
+
+function renderCard(drug) {
+  introEl.style.display = 'none';
+  cardEl.style.display = 'block';
+  cardEl.style.animation = 'none';
+  void cardEl.offsetWidth;
+  cardEl.style.animation = 'fadeUp 0.35s ease forwards';
+
+  const indications = drug.indications
+    .split('\n')
+    .filter(Boolean)
+    .map(i => `<span class="indication-tag">${i.trim()}</span>`)
+    .join('');
+
+  const dosingLines = drug.dosing.split('\n').filter(Boolean)
+    .map(l => `<div class="line">${l.trim()}</div>`).join('');
+
+  const adverseLines = drug.adverse.split(/[,\n]/).map(s => s.trim()).filter(Boolean)
+    .map(l => `<div class="line">${l}</div>`).join('');
+
+  const counselingLines = drug.counseling.split('\n').filter(Boolean)
+    .map(l => `<div class="line">${l.trim()}</div>`).join('');
+
+  cardEl.innerHTML = `
+    <div class="card-header">
+      <div class="drug-generic">${drug.generic}</div>
+      <div class="drug-brand">${drug.brand}</div>
+      <div class="drug-meta">
+        <span class="quiz-badge">${drug.quiz.replace(' - ', ' · ')}</span>
+        <span class="class-badge">${drug.class_}</span>
+      </div>
+    </div>
+    <div class="sections">
+      <div class="section full">
+        <div class="section-label">FDA Indications</div>
+        <div class="section-content">${indications}</div>
+      </div>
+      <div class="section">
+        <div class="section-label">Typical Dosing</div>
+        <div class="section-content">${dosingLines}</div>
+      </div>
+      <div class="section">
+        <div class="section-label">Adverse Effects</div>
+        <div class="section-content">${adverseLines}</div>
+      </div>
+      <div class="section full">
+        <div class="section-label">Key Counseling Points</div>
+        <div class="section-content">${counselingLines}</div>
+      </div>
+    </div>
+  `;
+}
+
+function filterQuiz(quizPrefix) {
+  const matches = DRUGS.filter(d => d.quiz.startsWith(quizPrefix));
+  if (!matches.length) return;
+  currentMatches = matches;
+  searchEl.value = '';
+  suggestionsEl.innerHTML = matches.slice(0, 10).map((d, i) => `
+    <div class="suggestion-item" data-idx="${i}" onclick="selectDrug(${i})">
+      <div>
+        <div class="sug-generic">${d.generic}</div>
+        <div class="sug-brand">${d.brand.split(',')[0]}</div>
+      </div>
+      <div class="sug-quiz">${d.quiz.split(' - ')[0]}</div>
+    </div>
+  `).join('');
+  suggestionsEl.style.display = 'block';
+  searchEl.focus();
+}
+
+searchEl.addEventListener('input', () => showSuggestions(searchEl.value));
+
+searchEl.addEventListener('keydown', e => {
+  const items = suggestionsEl.querySelectorAll('.suggestion-item');
+  if (e.key === 'ArrowDown') {
+    activeIdx = Math.min(activeIdx + 1, items.length - 1);
+  } else if (e.key === 'ArrowUp') {
+    activeIdx = Math.max(activeIdx - 1, 0);
+  } else if (e.key === 'Enter') {
+    if (activeIdx >= 0) selectDrug(activeIdx);
+    else if (currentMatches.length) selectDrug(0);
+    return;
+  } else if (e.key === 'Escape') {
+    suggestionsEl.style.display = 'none';
+    return;
+  }
+  items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) suggestionsEl.style.display = 'none';
+});
+
+searchEl.focus();
+</script>
+</body>
+</html>
